@@ -1,7 +1,5 @@
-REPOSITORY                TAG                 IMAGE ID            CREATED              SIZE
-kowashi/ubuntu-tmp-file   latest              ea1d6e7aeb3b        About a minute ago   63.2MB
-ubuntu                    18.04               dcf4d4bef137        2 days ago           63.2MB
-hello-world               latest              feb5d9fea6a5        4 months ago         13.3kB
+sha256:8ebedfe076d686cba54292287dd69c09ade5080e4d496fb2aa3a6a5003a3767b
 
-$ docker inspect <u_container_id> - returns current state runned container with state and run-time params as network parameters 
-$ docker inspect <u_image_id> - return only info about image without run-time parameters and metrics
+Так как образ это упакованной приложение, в информации о нем содержится служебная информация( ИДшники, теги, даты создания, кто создал, из какого образа, версия, архитектура, слои, папки на диске)
+
+Контейнер же это запушенный из образа экземпляр приложения, в информации о нем мы видим все то же самое, что и в образе + данные о сети, его статус(запущен) и большой раздел hostconfig, в котором во видимому служебная информации о хосте на котором он запущен
