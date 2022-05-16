@@ -6,7 +6,7 @@
   - name: Create a reddit container
     docker_container:
       name: "reddit"
-      image: "anrad13/otus-reddit:1.0"
+      image: "kowashi/otus-reddit:1.0"
       exposed_ports:
         - "9292"
       ports:
