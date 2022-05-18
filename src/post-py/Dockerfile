@@ -1,18 +1,14 @@
-FROM python:3.6-alpine
+FROM python:3.6.0-alpine
 
 WORKDIR /app
-COPY . /app
+ADD . /app
 
-RUN apk --no-cache --update add build-base gcc musl-dev && \
-    pip install --no-cache-dir --upgrade pip==21.3.1 && \
-    pip install --no-cache-dir -r /app/requirements.txt && \
-    apk del build-base \
-    && addgroup -g 2000 post \
-    && adduser -u 2000 -G post -s /bin/sh -D post
+RUN apk --no-cache --update add build-base \
+    && pip install --upgrade pip \
+    && pip install -r /app/requirements.txt \   
+    && apk del build-base
 
-USER 2000
-
-ENV POST_DATABASE_HOST=post_db \
-    POST_DATABASE=posts
+ENV POST_DATABASE_HOST post_db
+ENV POST_DATABASE posts
 
 ENTRYPOINT ["python3", "post_app.py"]

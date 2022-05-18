@@ -1,21 +1,17 @@
-FROM alpine:3.14
+FROM ruby:2.2
+RUN apt-get update -qq && apt-get install -y build-essential
 
-WORKDIR /app
-COPY . /app
+ENV APP_HOME /app
+RUN mkdir $APP_HOME
 
-RUN apk update \
-    && apk add --no-cache ruby ruby-dev ruby-full g++ make \
-    && gem install bundler:1.17.2 \
-    && bundle install \
-    && apk del ruby-dev g++ make \
-    && addgroup -g 2000 ui \
-    && adduser -u 2000 -G ui -s /bin/sh -D ui
+WORKDIR $APP_HOME
+ADD Gemfile* $APP_HOME/
+RUN bundle install
+ADD . $APP_HOME
 
-USER 2000
-
-ENV POST_SERVICE_HOST=post \
-    POST_SERVICE_PORT=5000 \
-    COMMENT_SERVICE_HOST=comment \
-    COMMENT_SERVICE_PORT=9292
+ENV POST_SERVICE_HOST post
+ENV POST_SERVICE_PORT 5000
+ENV COMMENT_SERVICE_HOST comment
+ENV COMMENT_SERVICE_PORT 9292
 
 CMD ["puma"]

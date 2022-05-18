@@ -10,13 +10,13 @@ services:
       - back_net
 
   fluentd:
-    image: ${REPONAME}/fluentd ## Вот тут мой образ, который я собирал для тестов
+    image: seeker00837149/fluentd  
     ports:
       - "24224:24224"
       - "24224:24224/udp"
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    image: mrgreyves/elasticsearch:7.13.1
     environment:
       - ELASTIC_CLUSTER=false
       - CLUSTER_NODE_MASTER=true
@@ -28,7 +28,7 @@ services:
       - "9200:9200"
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.13.1
+    image: mrgreyves/kibana:7.13.1
     ports:
       - "5601:5601"
 

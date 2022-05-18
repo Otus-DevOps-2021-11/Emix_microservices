@@ -1,110 +1,90 @@
 version: '3.3'
 services:
-  db:
-    image: mongo:${MONGODB_VERSION}
+
+  post_db:
+    image: mongo:${MONGO_TAG}
     volumes:
       - post_db:/data/db
-    networks:
-      - back_net
-  ui:
-    # build: ./ui
-    image: ${REPONAME}/ui:${UI_VERSION}
     environment:
       - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
-    ports:
-      - ${HOST_PORT}:9292/tcp
     networks:
-      - front_net
+      back_net:
+        aliases:
+          - post_db
+
+  comment_db:
+    image: mongo:${MONGO_TAG}
+    volumes:
+      - comment_db:/data/db
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    networks:
+      back_net:
+        aliases:
+          - comment_db
+
+  ui:
+#    build: ./ui
+    image: ${USERNAME_HUB}/ui:${SERVICE_VER}
+    ports:
+      - 80:9292/tcp
     logging:
       driver: "fluentd"
       options:
         fluentd-address: localhost:24224
         tag: service.ui
-  post:
-    # build: ./post-py
-    image: ${REPONAME}/post:${POST_VERSION}
     environment:
       - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
-    links:
-      - db:post_db
     networks:
-      - front_net
-      - back_net
+      front_net:
+        aliases:
+          - ui
 
-    ports:
-      - "5000:5000"
+  post:
+#    build: ./post-py
+    image: ${USERNAME_HUB}/post:${SERVICE_VER}
+    container_name: post
     logging:
       driver: "fluentd"
       options:
         fluentd-address: localhost:24224
-        tag: service.post
-
-  comment:
-    # build: ./comment
-    image: ${REPONAME}/comment:${COMMENT_VERSION}
+        tag: service.post 
     environment:
       - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
-    links:
-      - db:comment_db
     networks:
-      - front_net
-      - back_net
+      front_net:
+        aliases:
+          - post
+      back_net:
+        aliases:
+          - post
 
-  prometheus:
-    image: ${REPONAME}/prometheus:latest
-    ports:
-      - '9090:9090'
-    volumes:
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention=1d'
+  comment:
+#    build: ./comment
+    image: ${USERNAME_HUB}/comment:${SERVICE_VER}
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     networks:
-      - front_net
-
-  node-exporter:
-    image: prom/node-exporter:v1.3.1
-    user: root
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
-    networks:
-      - front_net
-
-  mongodb-exporter:
-    image: percona/mongodb_exporter:0.30
-    command:
-      - '--mongodb.uri=mongodb://db:27017'
-      # - '--web.listen-address=":9216"'
-      # - '--web.telemetry-path="/metrics"'
-    networks:
-      - back_net
-      - front_net
-
-  blackbox-exporter:
-    image: prom/blackbox-exporter:v0.19.0
-    # ports:
-    #   - '9115:9115'
-    networks:
-      - front_net
-
+      front_net:
+        aliases:
+          - comment        
+      back_net:
+        aliases:
+          - comment
 
 volumes:
   post_db:
-  prometheus_data:
+  comment_db:    
 
 networks:
-  back_net:
+  front_net:
+    driver: bridge
     ipam:
       config:
-        - subnet: 10.0.2.0/24
-  front_net:
-      ipam:
-        config:
-          - subnet: 10.0.1.0/24
+        - subnet: ${FRONT_NET_SUBNET}
+  back_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${BACK_NET_SUBNET}
+
