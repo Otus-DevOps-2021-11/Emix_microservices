@@ -1,23 +1,28 @@
 {
+    "variables": {
+        "service_account_key_file": "",
+        "folder_id": "",
+        "source_image_family": ""
+    },
+
     "builders": [
-           {
-               "type": "yandex",
-               "service_account_key_file": "{{user `yc_service_access_key`}}",
-               "folder_id": "{{user `folder_id`}}",
-               "source_image_family": "{{user `source_image_family`}}",
-               "image_name": "docker-host-{{timestamp}}",
-               "image_family": "{{ user `image_family`}}",
-               "ssh_username": "{{ user `ssh_username`}}",
-               "platform_id": "{{user `platform_id`}}",
-               "instance_cores": "{{user `instance_cores`}}",
-               "instance_mem_gb": "{{user `instance_mem_gb`}}",
-               "use_ipv4_nat": "true"
-           }
-       ],
-       "provisioners": [
-           {
-            "type": "ansible",
-            "playbook_file": "../ansible/playbooks/packer_docker.yml"
+        {
+            "type": "yandex",
+            "service_account_key_file": "{{user `service_account_key_file`}}",
+            "folder_id": "{{user `folder_id`}}",
+            "source_image_family": "{{user `source_image_family`}}",
+            "image_name": "{{user `source_image_family`}}-docker-image",
+            "image_family": "docker-base",
+            "ssh_username": "ubuntu",
+            "platform_id": "standard-v1",
+            "subnet_id": "e9bgj9g69215aih7t6je",
+            "use_ipv4_nat": "true"
         }
-       ]
-   }
+    ],
+    "provisioners": [
+        {
+            "type": "ansible",
+            "playbook_file": "ansible/playbooks/packer-docker.yml"
+        }
+    ]
+}
